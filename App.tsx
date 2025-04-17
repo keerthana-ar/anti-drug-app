@@ -1,7 +1,7 @@
 import React from 'react';
+import { View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { RootStackParamList } from './src/types/navigation';
 
@@ -9,17 +9,22 @@ import { RootStackParamList } from './src/types/navigation';
 import HomeScreen from './src/screens/HomeScreen';
 import ReportScreen from './src/screens/ReportScreen';
 import LoginScreen from './src/screens/LoginScreen';
+import RegisterScreen from './src/screens/RegisterScreen';
 import AuthorityDashboard from './src/screens/AuthorityDashboard';
 import ReportDetailsScreen from './src/screens/ReportDetailsScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-export default function App() {
+function App() {
+  console.log('App rendering...');
+  
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        <StatusBar style="auto" />
-        <Stack.Navigator 
+      <NavigationContainer
+        onStateChange={(state) => console.log('Navigation state:', state)}
+        fallback={<Text>Loading...</Text>}
+      >
+        <Stack.Navigator
           initialRouteName="Home"
           screenOptions={{
             headerStyle: {
@@ -33,31 +38,38 @@ export default function App() {
         >
           <Stack.Screen 
             name="Home" 
-            component={HomeScreen} 
+            component={HomeScreen}
             options={{ title: 'Anti-Drug Campaign' }}
           />
           <Stack.Screen 
             name="Report" 
-            component={ReportScreen} 
+            component={ReportScreen}
             options={{ title: 'Submit Report' }}
           />
           <Stack.Screen 
             name="Login" 
-            component={LoginScreen} 
+            component={LoginScreen}
             options={{ title: 'Authority Login' }}
           />
           <Stack.Screen 
-            name="Dashboard" 
-            component={AuthorityDashboard} 
+            name="Register" 
+            component={RegisterScreen}
+            options={{ title: 'Create Account' }}
+          />
+          <Stack.Screen 
+            name="AuthorityDashboard" 
+            component={AuthorityDashboard}
             options={{ title: 'Authority Dashboard' }}
           />
           <Stack.Screen 
             name="ReportDetails" 
-            component={ReportDetailsScreen} 
+            component={ReportDetailsScreen}
             options={{ title: 'Report Details' }}
           />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
   );
-} 
+}
+
+export default App; 

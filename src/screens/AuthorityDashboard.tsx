@@ -1,18 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ReportListItem, ReportStatus } from '../types/report';
-import { mockReports } from '../data/mockReports';
+import { fetchReports } from '../services/reportService';
 import { RootStackParamList } from '../types/navigation';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const AuthorityDashboard = () => {
   const navigation = useNavigation<NavigationProp>();
-  const [reports, setReports] = useState<ReportListItem[]>(mockReports);
+  const [reports, setReports] = useState<ReportListItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<ReportStatus | 'all'>('all');
+
+  useEffect(() => {
+    loadReports();
+  }, []);
+
+  const loadReports = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const fetchedReports = await fetchReports();
+      setReports(fetchedReports);
+    } catch (error) {
+      setError('Failed to load reports. Please try again.');
+      Alert.alert('Error', 'Failed to load reports');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredReports = reports.filter(report => {
     if (selectedFilter === 'all') return true;
@@ -69,6 +89,25 @@ const AuthorityDashboard = () => {
     </TouchableOpacity>
   );
 
+  if (isLoading) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#4CAF50" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={loadReports}>
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -98,15 +137,31 @@ const AuthorityDashboard = () => {
               In Progress
             </Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.filterButton, selectedFilter === 'resolved' && styles.filterButtonActive]}
+            onPress={() => setSelectedFilter('resolved')}
+          >
+            <Text style={[styles.filterText, selectedFilter === 'resolved' && styles.filterTextActive]}>
+              Resolved
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
 
-      <FlatList
-        data={filteredReports}
-        renderItem={renderReportItem}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContainer}
-      />
+      {reports.length === 0 ? (
+        <View style={styles.centerContainer}>
+          <Text style={styles.noReportsText}>No reports found</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredReports}
+          renderItem={renderReportItem}
+          keyExtractor={item => item.id}
+          contentContainerStyle={styles.listContainer}
+          refreshing={isLoading}
+          onRefresh={loadReports}
+        />
+      )}
     </View>
   );
 };
@@ -114,6 +169,12 @@ const AuthorityDashboard = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: '#f5f5f5',
   },
   header: {
@@ -130,12 +191,13 @@ const styles = StyleSheet.create({
   },
   filterContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 10,
   },
   filterButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 15,
     backgroundColor: '#f0f0f0',
   },
   filterButtonActive: {
@@ -143,12 +205,13 @@ const styles = StyleSheet.create({
   },
   filterText: {
     color: '#666',
+    fontSize: 14,
   },
   filterTextActive: {
     color: '#fff',
   },
   listContainer: {
-    padding: 20,
+    padding: 15,
   },
   reportItem: {
     backgroundColor: '#fff',
@@ -168,9 +231,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   locationText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
+    flex: 1,
   },
   statusBadge: {
     paddingVertical: 4,
@@ -183,12 +247,34 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   descriptionText: {
+    fontSize: 14,
     color: '#666',
     marginBottom: 10,
   },
   timestampText: {
-    color: '#999',
     fontSize: 12,
+    color: '#999',
+  },
+  errorText: {
+    color: '#d32f2f',
+    fontSize: 16,
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  noReportsText: {
+    fontSize: 16,
+    color: '#666',
   },
 });
 

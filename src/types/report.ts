@@ -11,9 +11,9 @@ export interface Report {
 }
 
 export interface ReportData {
-  location: string;
   description: string;
-  images?: string[];
+  location: string;
+  images: string[];
   audioPath?: string;
 }
 

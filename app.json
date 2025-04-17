@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "Anti-Drug App",
+    "slug": "anti-drug-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app needs access to the camera to take photos for reports.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to photos for report submissions.",
+        "NSMicrophoneUsageDescription": "This app needs access to the microphone to record audio for reports."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "newArchEnabled": true,
+    "entryPoint": "./App.tsx",
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app needs access to your photos to attach them to reports.",
+          "cameraPermission": "The app needs access to your camera to take photos for reports."
+        }
+      ]
+    ]
+  }
+} 

@@ -1,19 +1,34 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/navigation';
+import { auth } from '../config/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation<NavigationProp>();
 
-  const handleLogin = () => {
-    // TODO: Implement Firebase authentication
-    console.log('Login attempt with:', email, password);
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      navigation.navigate('AuthorityDashboard');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to login');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -38,8 +53,14 @@ const LoginScreen = () => {
         secureTextEntry
       />
       
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
+      <TouchableOpacity 
+        style={[styles.button, isLoading && styles.buttonDisabled]} 
+        onPress={handleLogin}
+        disabled={isLoading}
+      >
+        <Text style={styles.buttonText}>
+          {isLoading ? 'Logging in...' : 'Login'}
+        </Text>
       </TouchableOpacity>
       
       <TouchableOpacity 
@@ -88,6 +109,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 10,
+  },
+  buttonDisabled: {
+    backgroundColor: '#ccc',
   },
   buttonText: {
     color: '#fff',

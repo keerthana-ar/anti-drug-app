@@ -1,21 +1,44 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types/navigation';
+import { auth } from '../config/firebase';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const RegisterScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
-  const navigation = useNavigation();
+  const [isLoading, setIsLoading] = useState(false);
+  const navigation = useNavigation<NavigationProp>();
 
-  const handleRegister = () => {
-    // TODO: Implement Firebase authentication
-    if (password !== confirmPassword) {
-      // TODO: Show error message
+  const handleRegister = async () => {
+    if (!email || !password || !confirmPassword || !name) {
+      Alert.alert('Error', 'Please fill in all fields');
       return;
     }
-    console.log('Register attempt with:', { email, password, name });
+
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(userCredential.user, { displayName: name });
+      Alert.alert('Success', 'Account created successfully', [
+        { text: 'OK', onPress: () => navigation.navigate('Login') }
+      ]);
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to create account');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -56,8 +79,14 @@ const RegisterScreen = () => {
         secureTextEntry
       />
       
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Register</Text>
+      <TouchableOpacity 
+        style={[styles.button, isLoading && styles.buttonDisabled]} 
+        onPress={handleRegister}
+        disabled={isLoading}
+      >
+        <Text style={styles.buttonText}>
+          {isLoading ? 'Creating Account...' : 'Register'}
+        </Text>
       </TouchableOpacity>
       
       <TouchableOpacity 
@@ -106,6 +135,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 10,
+  },
+  buttonDisabled: {
+    backgroundColor: '#ccc',
   },
   buttonText: {
     color: '#fff',

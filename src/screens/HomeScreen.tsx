@@ -9,10 +9,13 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const HomeScreen = () => {
+  console.log('HomeScreen rendering...');
+  
   const navigation = useNavigation<NavigationProp>();
   const [firebaseStatus, setFirebaseStatus] = useState<string>('Checking...');
 
   useEffect(() => {
+    console.log('HomeScreen useEffect running...');
     // Test Firebase connection
     const testFirebase = async () => {
       try {
@@ -40,7 +43,10 @@ const HomeScreen = () => {
       <View style={styles.content}>
         <TouchableOpacity 
           style={styles.button}
-          onPress={() => navigation.navigate('Report')}
+          onPress={() => {
+            console.log('Navigating to Report screen...');
+            navigation.navigate('Report');
+          }}
         >
           <Icon name="report" size={30} color="#fff" />
           <Text style={styles.buttonText}>Submit Report</Text>
@@ -48,7 +54,10 @@ const HomeScreen = () => {
 
         <TouchableOpacity 
           style={styles.button}
-          onPress={() => navigation.navigate('Login')}
+          onPress={() => {
+            console.log('Navigating to Login screen...');
+            navigation.navigate('Login');
+          }}
         >
           <Icon name="security" size={30} color="#fff" />
           <Text style={styles.buttonText}>Authority Login</Text>
